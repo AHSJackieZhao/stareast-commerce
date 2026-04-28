@@ -1,9 +1,10 @@
 name: API Tests
 
 on:
-  pull_request:
-    branches: [main]
   push:
+    branches:
+      - '**'
+  pull_request:
     branches: [main]
 
 jobs:

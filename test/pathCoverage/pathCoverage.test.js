@@ -13,7 +13,7 @@ describe('Path Coverage Tests', () => {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        expect(res.body).to.have.property('status').equal('ok');
+        expect(res.body).to.have.property('status').equal('not_ok');
         expect(res.body).to.have.property('timestamp');
         done();
       });
