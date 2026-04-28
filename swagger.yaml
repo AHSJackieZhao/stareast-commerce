@@ -1,0 +1,204 @@
+openapi: 3.0.0
+info:
+  title: StarEast Commerce API
+  description: E-commerce REST API with JWT authentication and checkout
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local server
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      tags:
+        - Health
+      responses:
+        '200':
+          description: API is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    example: '2026-04-28T12:00:00.000Z'
+
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - email
+                - password
+              properties:
+                username:
+                  type: string
+                  example: new_user
+                email:
+                  type: string
+                  example: new_user@example.com
+                password:
+                  type: string
+                  example: mypassword
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      username:
+                        type: string
+                      email:
+                        type: string
+        '400':
+          description: Missing required fields
+        '409':
+          description: Username or email already exists
+
+  /auth/login:
+    post:
+      summary: Login to get a JWT token
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: john_doe
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Login successful, returns JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          description: Missing required fields
+        '401':
+          description: Invalid credentials
+
+  /checkout:
+    post:
+      summary: Perform a checkout (requires authentication)
+      tags:
+        - Checkout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+                - paymentMethod
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - productId
+                      - quantity
+                    properties:
+                      productId:
+                        type: string
+                        example: '1'
+                      quantity:
+                        type: integer
+                        example: 2
+                paymentMethod:
+                  type: string
+                  enum:
+                    - cash
+                    - credit_card
+                  example: cash
+      responses:
+        '200':
+          description: Checkout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  order:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            productId:
+                              type: string
+                            name:
+                              type: string
+                            price:
+                              type: number
+                            quantity:
+                              type: integer
+                            itemTotal:
+                              type: number
+                      subtotal:
+                        type: number
+                        example: 1999.98
+                      discount:
+                        type: number
+                        example: 199.99
+                      total:
+                        type: number
+                        example: 1799.99
+                      paymentMethod:
+                        type: string
+                        example: cash
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
